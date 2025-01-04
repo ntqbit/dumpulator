@@ -304,10 +304,8 @@ class Dumpulator(Architecture):
         self.cs.detail = True
 
         # Workaround for buggy implementation of https://github.com/unicorn-engine/unicorn/pull/1746
-        def __ctl_w(ctl, nr):
-            return ctl | (nr << 26) | (UC_CTL_IO_WRITE << 30)
         try:
-            self._uc.ctl(__ctl_w(12, 1), 1)
+            self._uc.ctl(12, UC_CTL_IO_WRITE, 1)
         except UcError:
             pass
 
@@ -757,8 +755,8 @@ class Dumpulator(Architecture):
         assert self.regs.gs == context.SegGs
 
         # set up hooks
-        self._uc.hook_add(UC_HOOK_INSN, _hook_syscall, user_data=self, arg1=UC_X86_INS_SYSCALL)
-        self._uc.hook_add(UC_HOOK_INSN, _hook_syscall, user_data=self, arg1=UC_X86_INS_SYSENTER)
+        self._uc.hook_add(UC_HOOK_INSN, _hook_syscall, user_data=self, aux1=UC_X86_INS_SYSCALL)
+        self._uc.hook_add(UC_HOOK_INSN, _hook_syscall, user_data=self, aux1=UC_X86_INS_SYSENTER)
         self._uc.hook_add(UC_HOOK_MEM_INVALID, _hook_mem, user_data=self)
         self._uc.hook_add(UC_HOOK_INTR, _hook_interrupt, user_data=self)
         self._uc.hook_add(UC_HOOK_INSN_INVALID, _hook_invalid, user_data=self)
